@@ -18,7 +18,7 @@
         <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
 
             <a href="{{ route('home') }}" class="flex items-center gap-3">
-                <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH"
+                <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH" width="40" height="40"
                     class="h-10 w-10 object-contain">
 
                 <div>

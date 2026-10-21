@@ -6,7 +6,7 @@
             {{-- BRAND --}}
             <div>
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="Barangay San Luis logo"
+                    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="Barangay San Luis logo" width="48" height="48"
                         class="h-12 w-12 rounded-full object-cover">
                     <p class="text-lg font-extrabold leading-tight"
                         style="font-family: 'Bricolage Grotesque', 'Inter', sans-serif; letter-spacing: -0.02em;">

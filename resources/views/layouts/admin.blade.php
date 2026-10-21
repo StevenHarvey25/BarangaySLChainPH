@@ -37,7 +37,7 @@
 
             {{-- Branding --}}
             <div class="flex h-16 items-center gap-3 border-b border-white/10 px-4">
-                <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH Logo"
+                <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH Logo" width="40" height="40"
                     class="h-10 w-10 shrink-0 rounded-md bg-white object-contain p-1">
 
                 <div class="min-w-0">

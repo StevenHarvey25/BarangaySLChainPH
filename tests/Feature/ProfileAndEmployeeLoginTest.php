@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\EmployeeProfile;
 use App\Models\User;
+use App\Providers\AppServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class ProfileAndEmployeeLoginTest extends TestCase
@@ -44,6 +46,21 @@ class ProfileAndEmployeeLoginTest extends TestCase
         $response->assertOk()
             ->assertSee('data-lock-on-submit', false)
             ->assertSee('data-loading-text="Logging in..."', false);
+    }
+
+    public function test_production_assets_use_the_current_request_host_instead_of_the_configured_asset_host(): void
+    {
+        app()->detectEnvironment(fn (): string => 'production');
+        config(['app.asset_url' => 'https://barangaychainph.onrender.com']);
+        URL::useAssetOrigin('https://barangaychainph.onrender.com');
+
+        new AppServiceProvider(app())->boot();
+
+        $response = $this->get('https://barangayslchainph.onrender.com/login');
+
+        $response->assertOk()
+            ->assertSee('https://barangayslchainph.onrender.com/build/', false)
+            ->assertDontSee('https://barangaychainph.onrender.com/build/', false);
     }
 
     public function test_privacy_policy_discloses_collected_citizen_details(): void

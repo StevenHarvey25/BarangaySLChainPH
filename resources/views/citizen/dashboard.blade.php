@@ -24,7 +24,7 @@
 
             <div class="flex flex-col justify-center gap-4 bg-slate-50 p-8">
                 <div class="flex items-center gap-3">
-                    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt=""
+                    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="" width="48" height="48"
                         class="h-12 w-12 rounded-full border border-slate-200 bg-white object-contain p-0.5">
                     <div class="min-w-0">
                         <p class="truncate font-semibold text-slate-900">{{ auth()->user()->name }}</p>

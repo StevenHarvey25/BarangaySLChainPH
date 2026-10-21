@@ -1,6 +1,6 @@
 <a href="{{ route('citizen.dashboard') }}" class="flex min-w-0 items-center gap-1">
 
-    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH Logo"
+    <img src="{{ asset('img/branding/barangayChainPH-logo.png') }}" alt="BarangayChain PH Logo" width="36" height="36"
         class="h-8 w-8 shrink-0 rounded-full sm:h-9 sm:w-9">
 
     <span class="min-w-0 leading-tight">
