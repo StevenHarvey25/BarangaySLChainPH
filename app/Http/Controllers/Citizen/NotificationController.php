@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Citizen;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -31,9 +33,13 @@ class NotificationController extends Controller
     }
 
     // Mark all as read
-    public function readAll(Request $request)
+    public function readAll(Request $request): RedirectResponse|JsonResponse
     {
         $request->user()->unreadNotifications->markAsRead();
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true]);
+        }
 
         return back();
     }

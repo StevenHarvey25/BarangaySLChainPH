@@ -35,11 +35,31 @@ function stopLoading(el) {
     if ("disabled" in el) el.disabled = false;
 }
 
+function lockFormFields(form) {
+    if (!form.matches("[data-lock-on-submit]")) return;
+
+    form.querySelectorAll("input:not([type='hidden']), textarea").forEach((field) => {
+        field.readOnly = true;
+        field.setAttribute("aria-readonly", "true");
+    });
+}
+
+function unlockFormFields(form) {
+    if (!form.matches("[data-lock-on-submit]")) return;
+
+    form.querySelectorAll("input:not([type='hidden']), textarea").forEach((field) => {
+        field.readOnly = false;
+        field.removeAttribute("aria-readonly");
+    });
+}
+
 // Form submission
 document.addEventListener("submit", (e) => {
     const form = e.target;
 
     if (!form.matches("form")) return;
+
+    lockFormFields(form);
 
     const submitter = e.submitter;
 
@@ -64,4 +84,5 @@ document.addEventListener("click", (e) => {
 // Restore after browser back/forward navigation
 window.addEventListener("pageshow", () => {
     document.querySelectorAll("[data-loading]").forEach(stopLoading);
+    document.querySelectorAll("form[data-lock-on-submit]").forEach(unlockFormFields);
 });

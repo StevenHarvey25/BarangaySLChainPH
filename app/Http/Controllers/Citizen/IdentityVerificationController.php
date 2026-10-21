@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Citizen;
 
 use App\Http\Controllers\Controller;
 use App\Models\IdentityVerification;
+use App\Models\User;
+use App\Notifications\CitizenSubmissionReceived;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class IdentityVerificationController extends Controller
 {
@@ -95,7 +98,7 @@ class IdentityVerificationController extends Controller
         }
 
         $request->validate([
-            'document_type' => 'required|in:' . implode(',', $this->documentTypes),
+            'document_type' => 'required|in:'.implode(',', $this->documentTypes),
             'document' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'id_number' => 'required|string|max:50|regex:/^[A-Za-z0-9\-\s]+$/',
             'selfie' => 'required|image|mimes:jpg,jpeg,png|max:5120',
@@ -135,14 +138,27 @@ class IdentityVerificationController extends Controller
         $user->identityVerifications()->create([
             'status' => IdentityVerification::PENDING,
             'document_type' => $request->document_type,
-            'document_path' => $file->store('identity-documents/' . $user->id, 'local'),
+            'document_path' => $file->store('identity-documents/'.$user->id, 'local'),
             'document_original_name' => $file->getClientOriginalName(),
             'id_number_hash' => $hash,
-            'selfie_path' => $request->file('selfie')->store('identity-selfies/' . $user->id, 'local'),
+            'selfie_path' => $request->file('selfie')->store('identity-selfies/'.$user->id, 'local'),
             'selfie_source' => $request->selfie_source,
             'consented_at' => now(),
             'submitted_at' => now(),
         ]);
+
+        try {
+            Notification::send(
+                User::query()->where('role', 'admin')->where('is_active', true)->get(),
+                new CitizenSubmissionReceived(
+                    'New identity verification',
+                    $user->name.' submitted an identity verification application.',
+                    route('admin.identity-verification.index'),
+                ),
+            );
+        } catch (\Throwable $exception) {
+            report($exception);
+        }
 
         return redirect()->route('citizen.identity-verification')
             ->with('success', 'Your application was submitted. Please wait for review.');
@@ -152,7 +168,7 @@ class IdentityVerificationController extends Controller
     public function checkIdNumber(Request $request)
     {
         $request->validate([
-            'document_type' => 'required|in:' . implode(',', $this->documentTypes),
+            'document_type' => 'required|in:'.implode(',', $this->documentTypes),
             'id_number' => 'required|string|max:50|regex:/^[A-Za-z0-9\-\s]+$/',
         ], [
             'id_number.regex' => 'The ID number may only contain letters, numbers, and dashes.',
@@ -188,7 +204,7 @@ class IdentityVerificationController extends Controller
     {
         $clean = preg_replace('/[^a-z0-9]/', '', strtolower($number));
 
-        return hash_hmac('sha256', $type . '|' . $clean, config('app.key'));
+        return hash_hmac('sha256', $type.'|'.$clean, config('app.key'));
     }
 
     // Is this ID already used by another pending or verified account?

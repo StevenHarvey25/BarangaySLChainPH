@@ -42,9 +42,6 @@ function isStrongPassword(value) {
 function validateInput(input, form) {
     const name = input.name;
     const value = input.value;
-    const confirmation = form.querySelector(
-        '[name="password_confirmation"]'
-    );
 
     // Keep empty fields neutral until they contain a value.
     if (!value.trim()) {
@@ -59,16 +56,16 @@ function validateInput(input, form) {
     } else if (input.type === 'email') {
         valid = input.validity.valid;
     } else if (
-        input.type === 'password' &&
-        (confirmation || input.hasAttribute('data-password-strength'))
-    ) {
-        valid = isStrongPassword(value);
-    } else if (
         name === 'password_confirmation' ||
         input.hasAttribute('data-password-confirmation')
     ) {
         const password = form.querySelector('[name="password"]');
         valid = Boolean(password && value === password.value);
+    } else if (
+        input.type === 'password' &&
+        input.hasAttribute('data-password-strength')
+    ) {
+        valid = isStrongPassword(value);
     } else {
         // Generic validation for other fields and form types.
         valid = input.validity.valid;

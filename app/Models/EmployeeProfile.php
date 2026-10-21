@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'phone',
     'office',
     'date_hired',
+    'photo_path',
 ])]
 class EmployeeProfile extends Model
 {

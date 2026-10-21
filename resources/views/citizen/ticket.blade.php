@@ -42,9 +42,7 @@
                                 'bg-[#17325c] text-white' => $mine,
                                 'border border-slate-200 bg-white text-slate-900' => ! $mine,
                             ])>
-                                <p class="text-xs font-semibold opacity-70">
-                                    {{ $mine ? 'You' : 'Barangay staff' }}
-                                </p>
+                                <x-tickets.message-sender :message="$message" :ticket="$ticket" />
                                 <p class="mt-1 whitespace-pre-line">{{ $message->body }}</p>
                                 <p class="mt-1 text-[11px] opacity-70">
                                     {{ $message->created_at->timezone(config('app.timezone'))->format('M j, g:i A') }}

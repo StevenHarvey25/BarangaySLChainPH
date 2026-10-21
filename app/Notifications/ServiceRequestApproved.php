@@ -3,15 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\ServiceRequest;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ServiceRequestApproved extends Notification implements ShouldQueue
+class ServiceRequestApproved extends Notification
 {
-    use Queueable;
-
     public function __construct(public ServiceRequest $serviceRequest) {}
 
     public function via(object $notifiable): array

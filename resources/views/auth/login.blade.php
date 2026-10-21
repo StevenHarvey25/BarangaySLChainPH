@@ -38,7 +38,7 @@
         <x-feedbacks.form-errors />
 
         {{-- Login form --}}
-        <form action="{{ route('login.store') }}" method="POST" class="space-y-4">
+        <form action="{{ route('login.store') }}" method="POST" class="space-y-4" data-lock-on-submit>
             @csrf
 
             {{-- Email or Employee ID --}}

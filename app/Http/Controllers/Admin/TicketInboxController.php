@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ticket;
-use Illuminate\Http\RedirectResponse;
 use App\Notifications\TicketReplied;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -24,7 +24,10 @@ class TicketInboxController extends Controller
     {
         return view('admin.tickets.show', [
             'ticket' => $ticket->load('serviceRequest.user'),
-            'messages' => $ticket->messages()->with('user')->oldest()->get(),
+            'messages' => $ticket->messages()
+                ->with(['user.citizenProfile', 'user.employeeProfile'])
+                ->oldest()
+                ->get(),
         ]);
     }
 

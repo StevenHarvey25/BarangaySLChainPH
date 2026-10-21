@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Citizen;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceRequest;
+use App\Models\User;
+use App\Notifications\CitizenSubmissionReceived;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\View\View;
 
@@ -47,10 +50,12 @@ class ServiceRequestController extends Controller
     {
         return $this->form($request, 'indigency');
     }
+
     public function clearance(Request $request)
     {
         return $this->form($request, 'clearance');
     }
+
     public function residency(Request $request)
     {
         return $this->form($request, 'residency');
@@ -62,10 +67,12 @@ class ServiceRequestController extends Controller
     {
         return $this->previewRequest($request, 'indigency');
     }
+
     public function previewClearance(Request $request)
     {
         return $this->previewRequest($request, 'clearance');
     }
+
     public function previewResidency(Request $request)
     {
         return $this->previewRequest($request, 'residency');
@@ -77,10 +84,12 @@ class ServiceRequestController extends Controller
     {
         return $this->modifyRequest($request, 'indigency');
     }
+
     public function modifyClearance(Request $request)
     {
         return $this->modifyRequest($request, 'clearance');
     }
+
     public function modifyResidency(Request $request)
     {
         return $this->modifyRequest($request, 'residency');
@@ -92,10 +101,12 @@ class ServiceRequestController extends Controller
     {
         return $this->proceedRequest($request, 'indigency');
     }
+
     public function proceedClearance(Request $request)
     {
         return $this->proceedRequest($request, 'clearance');
     }
+
     public function proceedResidency(Request $request)
     {
         return $this->proceedRequest($request, 'residency');
@@ -243,7 +254,7 @@ class ServiceRequestController extends Controller
     {
         $data = $request->session()->get("{$type}_request");
 
-        if (!is_array($data)) {
+        if (! is_array($data)) {
             return $this->previewExpired($type);
         }
 
@@ -256,7 +267,7 @@ class ServiceRequestController extends Controller
 
             $serviceRequest = ServiceRequest::create([
                 'user_id' => $request->user()->id,
-                'reference_number' => 'BRGY-' . now()->format('YmdHis') . '-' . str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT),
+                'reference_number' => 'BRGY-'.now()->format('YmdHis').'-'.str_pad(random_int(1, 9999), 4, '0', STR_PAD_LEFT),
                 'service_type' => self::TYPES[$type]['service'],
                 'applicant_name' => $validated['name'],
                 'address' => $validated['address'],
@@ -277,6 +288,21 @@ class ServiceRequestController extends Controller
         });
 
         $request->session()->forget("{$type}_request");
+
+        if ($serviceRequest) {
+            try {
+                Notification::send(
+                    User::query()->where('role', 'admin')->where('is_active', true)->get(),
+                    new CitizenSubmissionReceived(
+                        'New permit request',
+                        $request->user()->name.' submitted '.$serviceRequest->reference_number.' for review.',
+                        route('admin.permits.show', $serviceRequest),
+                    ),
+                );
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
+        }
 
         return $serviceRequest
             ? redirect()->route('citizen.applications')->with('success', "Your certificate request {$serviceRequest->reference_number} was submitted for barangay processing.")

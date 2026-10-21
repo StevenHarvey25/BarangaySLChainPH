@@ -18,7 +18,10 @@ class TicketController extends Controller
         return view('citizen.ticket', [
             'application' => $serviceRequest,
             'ticket' => $ticket,
-            'messages' => $ticket->messages()->with('user')->oldest()->get(),
+            'messages' => $ticket->messages()
+                ->with(['user.citizenProfile', 'user.employeeProfile'])
+                ->oldest()
+                ->get(),
         ]);
     }
 

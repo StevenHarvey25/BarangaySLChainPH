@@ -1,5 +1,6 @@
 @props([
     'name',
+    'id' => null,
     'label',
     'type' => 'text',
     'value' => null,
@@ -10,6 +11,7 @@
 ])
 
 @php
+    $fieldId = $id ?? $name;
     // Colors for the white theme or the dark theme
     $field = $light
         ? 'border-slate-300 bg-white text-slate-900 hover:border-slate-400 focus:border-[#17325c] focus:ring-[#17325c]/20'
@@ -36,12 +38,12 @@
     <div class="relative">
 
         @if ($type === 'textarea')
-            <textarea id="{{ $name }}" name="{{ $name }}"
+            <textarea id="{{ $fieldId }}" name="{{ $name }}"
                 {{ $attributes->class([$base, $ph, 'min-h-[7rem] resize-y pr-3.5']) }}>{{ old($name, $value) }}</textarea>
 
         @elseif ($type === 'select')
             {{-- options: ['value' => 'Label'] --}}
-            <select id="{{ $name }}" name="{{ $name }}"
+            <select id="{{ $fieldId }}" name="{{ $name }}"
                 {{ $attributes->except('placeholder')->class([$base, $option, 'h-14 appearance-none pr-10']) }}>
                 <option value="">{{ $attributes->get('placeholder', 'Select an option') }}</option>
                 @foreach ($options as $optionValue => $optionLabel)
@@ -58,13 +60,13 @@
 
         @else
             {{-- text, email, tel, number, password, date... --}}
-            <input id="{{ $name }}" name="{{ $name }}" type="{{ $type }}"
+            <input id="{{ $fieldId }}" name="{{ $name }}" type="{{ $type }}"
                 @if ($type !== 'password') value="{{ old($name, $value) }}" @endif
                 {{ $attributes->class([$base, $ph, 'h-14', $type === 'password' ? 'pr-11' : 'pr-3.5']) }}>
         @endif
 
         {{-- Floating label --}}
-        <label for="{{ $name }}"
+        <label for="{{ $fieldId }}"
             class="pointer-events-none absolute left-3.5 text-xs font-semibold uppercase tracking-wider transition-all duration-200 {{ $muted }} {{ $accent }}
             {{ $raised ? 'top-2.5 text-[10px]' : ($type === 'textarea' ? 'top-4' : 'top-1/2 -translate-y-1/2') }}
             peer-focus:top-2.5 peer-focus:translate-y-0 peer-focus:text-[10px]

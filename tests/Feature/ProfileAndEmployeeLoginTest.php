@@ -37,6 +37,15 @@ class ProfileAndEmployeeLoginTest extends TestCase
             ->assertDontSee('name="zip_code"', false);
     }
 
+    public function test_login_form_locks_fields_while_submitting(): void
+    {
+        $response = $this->get(route('login'));
+
+        $response->assertOk()
+            ->assertSee('data-lock-on-submit', false)
+            ->assertSee('data-loading-text="Logging in..."', false);
+    }
+
     public function test_privacy_policy_discloses_collected_citizen_details(): void
     {
         $response = $this->get(route('privacy'));
@@ -182,10 +191,35 @@ class ProfileAndEmployeeLoginTest extends TestCase
 
         $response->assertRedirect(route('admin.users.index'));
         $employee = User::where('email', 'morgan@example.com')->firstOrFail();
+        $this->assertSame('staff', $employee->role);
         $this->assertSame('BSLCNPH-'.str_pad((string) $employee->id, 6, '0', STR_PAD_LEFT), $employee->employeeProfile->employee_id);
         $this->assertSame('Records', $employee->employeeProfile->department);
         $this->assertSame('Barangay Hall', $employee->employeeProfile->office);
         $this->assertSame('2024-01-15', $employee->employeeProfile->date_hired->toDateString());
+
+        $this->actingAs($employee)
+            ->get(route('admin.users.index'))
+            ->assertForbidden();
+
+        $this->actingAs($employee)
+            ->post(route('admin.users.store'), [
+                'name' => 'Unauthorized Admin',
+                'email' => 'unauthorized.admin@example.com',
+                'role' => 'admin',
+                'department' => 'Administration',
+                'position' => 'Administrator',
+                'password' => 'StrongPass123!',
+                'password_confirmation' => 'StrongPass123!',
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('users', [
+            'email' => 'unauthorized.admin@example.com',
+        ]);
+
+        $this->actingAs($employee)
+            ->patch(route('admin.users.toggle-status', $employee))
+            ->assertForbidden();
     }
 
     public function test_admin_created_administrator_uses_carlo_admin_default_and_gets_employee_id(): void

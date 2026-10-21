@@ -1,4 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-password-confirmation]').forEach((confirmationInput) => {
+        const form = confirmationInput.closest('form');
+        const passwordInput = form?.querySelector('[name="password"]');
+        const feedback = document.getElementById(`${confirmationInput.name}-feedback`);
+
+        if (!passwordInput || !feedback) {
+            return;
+        }
+
+        const updateConfirmationState = () => {
+            const hasConfirmation = confirmationInput.value.length > 0;
+            const passwordsMatch = confirmationInput.value === passwordInput.value;
+            const isMismatch = hasConfirmation && !passwordsMatch;
+
+            feedback.textContent = isMismatch ? 'Passwords do not match.' : '';
+            feedback.classList.toggle('hidden', !isMismatch);
+
+            if (hasConfirmation) {
+                confirmationInput.setAttribute('aria-invalid', String(isMismatch));
+            } else {
+                confirmationInput.removeAttribute('aria-invalid');
+            }
+        };
+
+        confirmationInput.addEventListener('input', updateConfirmationState);
+        passwordInput.addEventListener('input', updateConfirmationState);
+        updateConfirmationState();
+    });
+
     document.querySelectorAll('[data-password-strength-container]').forEach((container) => {
         const inputId = container.dataset.passwordTarget;
         const passwordInput = inputId ? document.getElementById(inputId) : null;

@@ -27,7 +27,7 @@
             </div>
 
             {{-- Messages --}}
-            <div class="mt-5 space-y-3">
+            <div id="messages" class="mt-5 space-y-3">
                 @foreach ($messages as $message)
                     @if ($message->is_system)
                         {{-- Automatic message from the system --}}
@@ -41,9 +41,7 @@
                                 'bg-slate-100 text-slate-900' => $message->user_id === $ticket->user_id,
                                 'bg-[#17325c] text-white' => $message->user_id !== $ticket->user_id,
                             ])>
-                                <p class="text-xs font-semibold opacity-70">
-                                    {{ $message->user_id === $ticket->user_id ? 'Citizen' : ($message->user?->name ?? 'Former account') }}
-                                </p>
+                                <x-tickets.message-sender :message="$message" :ticket="$ticket" />
                                 <p class="mt-1 whitespace-pre-line">{{ $message->body }}</p>
                                 <p class="mt-1 text-[11px] opacity-70">
                                     {{ $message->created_at->timezone(config('app.timezone'))->format('M j, g:i A') }}
@@ -77,4 +75,27 @@
             </p>
         @endif
     </div>
+
+    <script>
+        const box = document.getElementById('messages');
+        box.scrollTop = box.scrollHeight;
+
+        // Every 5 seconds, fetch this page again and swap only the message list
+        setInterval(async () => {
+            if (document.hidden) return;
+
+            try {
+                const html = await (await fetch(location.href)).text();
+                const fresh = new DOMParser().parseFromString(html, 'text/html').getElementById('messages');
+                const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 60;
+
+                if (fresh && fresh.innerHTML !== box.innerHTML) {
+                    box.innerHTML = fresh.innerHTML;
+                    if (atBottom) box.scrollTop = box.scrollHeight;
+                }
+            } catch (e) {
+                // network problem: try again on the next round
+            }
+        }, 5000);
+    </script>
 @endsection
