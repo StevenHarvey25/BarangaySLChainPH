@@ -5,8 +5,10 @@ namespace Tests\Feature;
 use App\Models\EmployeeProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -157,5 +159,52 @@ class AdminProfileTest extends TestCase
 
         $response->assertOk()
             ->assertHeader('Content-Type', 'image/png');
+    }
+
+    public function test_admin_profile_photo_can_be_stored_and_served_from_supabase(): void
+    {
+        config([
+            'services.profile_photos.driver' => 'supabase',
+            'services.supabase.url' => 'https://test-project.supabase.co',
+            'services.supabase.storage_bucket' => 'profile-photos',
+            'services.supabase.service_role_key' => 'test-service-role-key',
+        ]);
+        Http::preventStrayRequests();
+        Http::fake([
+            'https://test-project.supabase.co/storage/v1/object/profile-photos/*' => Http::response([], 200),
+            'https://test-project.supabase.co/storage/v1/object/authenticated/profile-photos/*' => Http::response(
+                'test-image-content',
+                200,
+            ),
+        ]);
+        $admin = User::factory()->create([
+            'role' => 'admin',
+            'is_active' => true,
+        ]);
+        EmployeeProfile::create([
+            'user_id' => $admin->id,
+            'employee_id' => 'BSLCNPH-'.$admin->id,
+            'department' => 'Administration',
+            'position' => 'Administrator',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.profile.photo'), [
+                'photo' => UploadedFile::fake()->image('admin.png'),
+            ])
+            ->assertRedirect(route('admin.profile'));
+
+        $path = $admin->fresh()->employeeProfile->photo_path;
+        $this->assertStringStartsWith('admin-profile-photos/', $path);
+
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'POST'
+            && str_starts_with($request->url(), 'https://test-project.supabase.co/storage/v1/object/profile-photos/')
+            && $request->hasHeader('Authorization', 'Bearer test-service-role-key'));
+
+        $this->actingAs($admin)
+            ->get(route('admin.profile.photo.show'))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'image/png')
+            ->assertContent('test-image-content');
     }
 }

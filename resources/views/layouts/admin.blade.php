@@ -277,7 +277,7 @@
                                 <span class="block text-[10px] font-semibold uppercase tracking-wide text-emerald-600">Admin</span>
                             </span>
                             @if (auth()->user()->employeeProfile?->photo_path)
-                                <img src="{{ route('admin.profile.photo.show') }}?v={{ auth()->user()->updated_at?->timestamp }}"
+                                <img src="{{ route('admin.profile.photo.show') }}?v={{ auth()->user()->employeeProfile?->updated_at?->timestamp }}"
                                     alt="" class="h-9 w-9 rounded-full object-cover">
                             @else
                                 <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#17325c] text-sm font-bold text-white">

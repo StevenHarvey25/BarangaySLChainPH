@@ -10,7 +10,7 @@ class CitizenNotificationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_marking_a_notification_as_read_redirects_to_its_destination(): void
+    public function test_marking_a_notification_as_read_uses_the_current_host_for_its_destination(): void
     {
         $citizen = User::factory()->create([
             'role' => 'citizen',
@@ -19,13 +19,13 @@ class CitizenNotificationTest extends TestCase
         $notification = $citizen->notifications()->create([
             'id' => 'a4d1ba9c-1a0b-4d44-a87b-100001234567',
             'type' => 'App\\Notifications\\ServiceRequestApproved',
-            'data' => ['url' => route('citizen.applications')],
+            'data' => ['url' => 'https://barangaychainph.test/citizen/applications/37/ticket'],
         ]);
 
         $response = $this->actingAs($citizen)
-            ->post(route('citizen.notifications.read', $notification->id));
+            ->post('https://barangayslchainph.onrender.com'.route('citizen.notifications.read', $notification->id, false));
 
-        $response->assertRedirect(route('citizen.applications'));
+        $response->assertRedirect('https://barangayslchainph.onrender.com/citizen/applications/37/ticket');
         $this->assertNotNull($notification->fresh()->read_at);
     }
 

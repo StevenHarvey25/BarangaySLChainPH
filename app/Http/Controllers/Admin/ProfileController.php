@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\ProfilePhotoStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfileController extends Controller
 {
@@ -52,7 +52,7 @@ class ProfileController extends Controller
             ->with('success', 'Your profile was updated successfully.');
     }
 
-    public function photo(Request $request): RedirectResponse
+    public function photo(Request $request, ProfilePhotoStorage $photos): RedirectResponse
     {
         $request->validate([
             'photo' => ['required', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
@@ -65,27 +65,25 @@ class ProfileController extends Controller
 
         abort_unless($employeeProfile, 403);
         $oldPath = $employeeProfile->photo_path;
+        $newPath = $photos->store($request->file('photo'), 'admin-profile-photos');
 
         $employeeProfile->update([
-            'photo_path' => $request->file('photo')->store('admin-profile-photos', 'local'),
+            'photo_path' => $newPath,
         ]);
 
-        if ($oldPath) {
-            Storage::disk('local')->delete($oldPath);
-        }
+        $photos->delete($oldPath);
 
         return redirect()
             ->route('admin.profile')
             ->with('success', 'Your profile photo was updated.');
     }
 
-    public function showPhoto(Request $request): BinaryFileResponse
+    public function showPhoto(Request $request, ProfilePhotoStorage $photos): Response
     {
         $path = $request->user()->employeeProfile?->photo_path;
-        $disk = Storage::disk('local');
 
-        abort_unless($path && $disk->exists($path), 404);
+        abort_unless($path, 404);
 
-        return response()->file($disk->path($path));
+        return $photos->response($path);
     }
 }

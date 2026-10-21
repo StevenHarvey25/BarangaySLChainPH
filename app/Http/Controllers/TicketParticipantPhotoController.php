@@ -4,14 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\ProfilePhotoStorage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class TicketParticipantPhotoController extends Controller
 {
-    public function show(Request $request, Ticket $ticket, User $participant): BinaryFileResponse
-    {
+    public function show(
+        Request $request,
+        Ticket $ticket,
+        User $participant,
+        ProfilePhotoStorage $photos,
+    ): Response {
         $viewer = $request->user();
 
         if ($viewer->isCitizen()) {
@@ -29,12 +33,9 @@ class TicketParticipantPhotoController extends Controller
             ? $participant->citizenProfile
             : $participant->employeeProfile;
         $path = $profile?->photo_path;
-        $disk = Storage::disk('local');
 
-        abort_unless($path && $disk->exists($path), 404);
+        abort_unless($path, 404);
 
-        return response()->file($disk->path($path), [
-            'Cache-Control' => 'private, max-age=60',
-        ]);
+        return $photos->response($path);
     }
 }

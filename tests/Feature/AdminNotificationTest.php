@@ -33,7 +33,7 @@ class AdminNotificationTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
-    public function test_clicking_an_admin_notification_marks_it_read_and_redirects_to_its_destination(): void
+    public function test_clicking_an_admin_notification_uses_the_current_host_for_its_destination(): void
     {
         $admin = User::factory()->create([
             'role' => 'admin',
@@ -45,14 +45,14 @@ class AdminNotificationTest extends TestCase
             'data' => [
                 'title' => 'New identity verification',
                 'message' => 'A citizen submitted an identity verification application.',
-                'url' => route('admin.identity-verification.index'),
+                'url' => 'https://barangaychainph.test/admin/identity-verification',
             ],
         ]);
 
         $response = $this->actingAs($admin)
-            ->post(route('admin.notifications.read', $notification->id));
+            ->post('https://barangayslchainph.onrender.com'.route('admin.notifications.read', $notification->id, false));
 
-        $response->assertRedirect(route('admin.identity-verification.index'));
+        $response->assertRedirect('https://barangayslchainph.onrender.com/admin/identity-verification');
         $this->assertNotNull($notification->fresh()->read_at);
     }
 }

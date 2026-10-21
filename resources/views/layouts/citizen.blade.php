@@ -190,7 +190,8 @@
                         </span>
 
                         @if ($photo)
-                            <img src="{{ route('citizen.profile.photo.show') }}" alt=""
+                            <img src="{{ route('citizen.profile.photo.show') }}?v={{ $user->citizenProfile?->updated_at?->timestamp }}"
+                                 alt=""
                                  class="hidden h-10 w-10 rounded-full object-cover lg:block">
                         @else
                             <span class="hidden h-10 w-10 items-center justify-center rounded-full bg-[#17325c] font-bold text-white lg:flex">

@@ -28,7 +28,7 @@
         <section class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
             <div class="mb-6 flex items-center gap-4 border-b border-slate-100 pb-5">
                 @if ($user->employeeProfile?->photo_path)
-                    <img src="{{ route('admin.profile.photo.show') }}?v={{ $user->updated_at?->timestamp }}"
+                    <img src="{{ route('admin.profile.photo.show') }}?v={{ $user->employeeProfile->updated_at?->timestamp }}"
                         alt="Profile photo" class="h-16 w-16 rounded-full object-cover">
                 @else
                     <div class="flex h-16 w-16 items-center justify-center rounded-full bg-[#17325c] text-xl font-bold text-white">

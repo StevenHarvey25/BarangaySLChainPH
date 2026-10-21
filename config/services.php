@@ -40,6 +40,16 @@ return [
         'secret_key' => env('RECAPTCHA_SECRET_KEY'),
     ],
 
+    'profile_photos' => [
+        'driver' => env('PROFILE_PHOTO_DRIVER', 'local'),
+    ],
+
+    'supabase' => [
+        'url' => env('SUPABASE_URL'),
+        'storage_bucket' => env('SUPABASE_STORAGE_BUCKET'),
+        'service_role_key' => env('SUPABASE_SERVICE_ROLE_KEY'),
+    ],
+
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

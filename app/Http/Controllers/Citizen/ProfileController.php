@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Citizen;
 
 use App\Http\Controllers\Controller;
 use App\Models\CitizenProfile;
+use App\Services\ProfilePhotoStorage;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProfileController extends Controller
 {
@@ -56,7 +57,7 @@ class ProfileController extends Controller
         return redirect()->route('citizen.profile')->with('success', 'Your profile was updated.');
     }
 
-    public function photo(Request $request)
+    public function photo(Request $request, ProfilePhotoStorage $photos)
     {
         $profile = $this->verifiedProfile($request);
 
@@ -66,28 +67,25 @@ class ProfileController extends Controller
             'photo.max' => 'The photo must not be larger than 2 MB.',
         ]);
 
+        $newPath = $photos->store($request->file('photo'), 'profile-photos');
         $oldPath = $profile->photo_path;
 
         $profile->update([
-            'photo_path' => $request->file('photo')->store('profile-photos', 'local'),
+            'photo_path' => $newPath,
         ]);
 
-        // Remove the old photo only after the new one is saved
-        if ($oldPath) {
-            Storage::disk('local')->delete($oldPath);
-        }
+        $photos->delete($oldPath);
 
         return redirect()->route('citizen.profile')->with('success', 'Your photo was updated.');
     }
 
-    public function showPhoto(Request $request)
+    public function showPhoto(Request $request, ProfilePhotoStorage $photos): Response
     {
         $path = $request->user()->citizenProfile?->photo_path;
-        $disk = Storage::disk('local');
 
-        abort_unless($path && $disk->exists($path), 404);
+        abort_unless($path, 404);
 
-        return response()->file($disk->path($path));
+        return $photos->response($path);
     }
 
     private function verifiedProfile(Request $request): CitizenProfile
